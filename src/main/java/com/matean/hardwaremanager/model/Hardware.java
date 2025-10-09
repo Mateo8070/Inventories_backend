@@ -5,8 +5,11 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
+
 
 @Entity
 @Table(name = "hardware")
@@ -18,37 +21,23 @@ public class Hardware {
     private UUID id;
 
     private String description;
-
-    private String quantity;
-
-    @Column(name = "wholesale_price")
-    private double wholesalePrice;
-
-    @Column(name = "retail_price")
-    private double retailPrice;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @Column(name = "is_deleted")
-    private boolean isDeleted;
-
-    @Column(name = "wholesale_price_unit")
+    private String category; // Added to match DDL
+    private String quantity; // Changed from Integer to String to match DDL
+    private Double wholesalePrice;
+    private Double retailPrice;
     private String wholesalePriceUnit;
-
-    @Column(name = "retail_price_unit")
     private String retailPriceUnit;
 
-    @Column(name = "updated_by")
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
     private String updatedBy;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    private String location;
+    private String location; // Changed to String to match DDL's jsonb (as a string representation)
+    private boolean isDeleted = false; // Renamed from 'deleted' to 'isDeleted' and type to primitive boolean to match DDL
 
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    @JsonBackReference
-    private Category category;
+    @Column(name = "image_url")
+    private String imageUrl;
 
     public UUID getId() {
         return id;
@@ -138,17 +127,20 @@ public class Hardware {
         this.location = location;
     }
 
-    public Category getCategory() {
+    public String getCategory() {
         return category;
     }
 
-    public void setCategory(Category category) {
+    public void setCategory(String category) {
         this.category = category;
     }
 
-    @PrePersist
-    protected void onCreate() {
-        updatedAt = LocalDateTime.now();
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     @PreUpdate

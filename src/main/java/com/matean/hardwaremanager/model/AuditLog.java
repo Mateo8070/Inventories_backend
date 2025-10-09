@@ -14,7 +14,7 @@ public class AuditLog {
     private UUID id;
 
     @Column(name = "item_id")
-    private Long itemId;
+    private UUID itemId;
 
     private String username;
 
@@ -32,11 +32,11 @@ public class AuditLog {
         this.id = id;
     }
 
-    public Long getItemId() {
+    public UUID getItemId() {
         return itemId;
     }
 
-    public void setItemId(Long itemId) {
+    public void setItemId(UUID itemId) {
         this.itemId = itemId;
     }
 

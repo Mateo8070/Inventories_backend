@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -45,14 +46,6 @@ public class HardwareController {
         if (hardware == null) {
             return null;
         }
-        CategoryDto categoryDto = null;
-        if (hardware.getCategory() != null) {
-            categoryDto = new CategoryDto(
-                    hardware.getCategory().getId(),
-                    hardware.getCategory().getName(),
-                    hardware.getCategory().getColor()
-            );
-        }
         return new HardwareDto(
                 hardware.getId(),
                 hardware.getDescription(),
@@ -65,22 +58,23 @@ public class HardwareController {
                 hardware.getRetailPriceUnit(),
                 hardware.getUpdatedBy(),
                 hardware.getLocation(),
-                categoryDto
+                hardware.getCategory(),
+                hardware.getImageUrl()
         );
     }
 
-    @PostMapping
-    public HardwareDto createHardware(@RequestBody HardwareDto hardwareDto) {
+    @PostMapping(consumes = {"multipart/form-data"})
+    public HardwareDto createHardware(@RequestPart("hardware") HardwareDto hardwareDto, @RequestPart("file") MultipartFile file) {
         Hardware hardware = convertToEntity(hardwareDto);
-        Hardware savedHardware = hardwareService.saveHardware(hardware);
+        Hardware savedHardware = hardwareService.saveHardware(hardware, file);
         return convertToDto(savedHardware);
     }
 
-    @PutMapping("/{id}")
-    public HardwareDto updateHardware(@PathVariable UUID id, @RequestBody HardwareDto hardwareDto) {
+    @PutMapping(value = "/{id}", consumes = {"multipart/form-data"})
+    public HardwareDto updateHardware(@PathVariable UUID id, @RequestPart("hardware") HardwareDto hardwareDto, @RequestPart(value = "file", required = false) MultipartFile file) {
         Hardware hardware = convertToEntity(hardwareDto);
         hardware.setId(id);
-        Hardware updatedHardware = hardwareService.saveHardware(hardware);
+        Hardware updatedHardware = hardwareService.saveHardware(hardware, file);
         return convertToDto(updatedHardware);
     }
 
@@ -100,12 +94,8 @@ public class HardwareController {
         hardware.setRetailPriceUnit(hardwareDto.getRetailPriceUnit());
         hardware.setUpdatedBy(hardwareDto.getUpdatedBy());
         hardware.setLocation(hardwareDto.getLocation());
-
-        if (hardwareDto.getCategory() != null && hardwareDto.getCategory().getId() != null) {
-            Category category = new Category();
-            category.setId(hardwareDto.getCategory().getId());
-            hardware.setCategory(category);
-        }
+        hardware.setCategory(hardwareDto.getCategory());
+        hardware.setImageUrl(hardwareDto.getImageUrl());
         return hardware;
     }
 

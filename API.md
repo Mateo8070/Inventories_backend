@@ -1,5 +1,10 @@
 # Hardware Manager API Documentation
 
+Access key
+If you lose or forget your secret access key, you cannot retrieve it. Instead, create a new access key and make the old key inactive.
+
+
+
 This document provides a detailed description of the Hardware Manager API.
 
 ## Base URL
@@ -40,7 +45,8 @@ Represents a piece of hardware.
 | `retailPriceUnit`    | String        | The unit for the retail price (e.g., USD).      |
 | `updatedBy`          | String        | The user who last updated the hardware.         |
 | `location`           | String (JSON) | The location of the hardware in JSON format.    |
-| `category`           | CategoryDto   | The category to which the hardware belongs.     |
+| `category`           | String        | The category to which the hardware belongs.     |
+| `imageUrl`           | String        | The URL of the hardware's image.                |
 
 ---
 
@@ -181,11 +187,8 @@ The Hardware API provides endpoints for managing hardware items.
             "retailPriceUnit": "USD",
             "updatedBy": "admin",
             "location": "{"warehouse": "A", "shelf": "3"}",
-            "category": {
-                "id": "c0a80121-7ac0-11eb-8dcd-0242ac130003",
-                "name": "Laptops",
-                "color": "#007bff"
-            }
+            "category": "Laptops",
+            "imageUrl": "https://hardware-images-bucket.s3.eu-north-1.amazonaws.com/hardware/1665072000000_macbook.jpg"
         },
         {
             "id": "d0a80121-7ac0-11eb-8dcd-0242ac130007",
@@ -199,11 +202,8 @@ The Hardware API provides endpoints for managing hardware items.
             "retailPriceUnit": "USD",
             "updatedBy": "admin",
             "location": "{"warehouse": "B", "shelf": "12"}",
-            "category": {
-                "id": "c0a80121-7ac0-11eb-8dcd-0242ac130005",
-                "name": "Mice",
-                "color": "#ffc107"
-            }
+            "category": "Mice",
+            "imageUrl": "https://hardware-images-bucket.s3.eu-north-1.amazonaws.com/hardware/1665072300000_logitech_mouse.jpg"
         }
     ]
     ```
@@ -228,12 +228,10 @@ The Hardware API provides endpoints for managing hardware items.
         "retailPriceUnit": "USD",
         "updatedBy": "admin",
         "location": "{"warehouse": "A", "shelf": "3"}",
-        "category": {
-            "id": "c0a80121-7ac0-11eb-8dcd-0242ac130003",
-            "name": "Laptops",
-            "color": "#007bff"
-        }
+        "category": "Laptops",
+        "imageUrl": "https://hardware-images-bucket.s3.eu-north-1.amazonaws.com/hardware/1665072000000_macbook.jpg"
     }
+
     ```
 
 ### Create Hardware
@@ -241,23 +239,25 @@ The Hardware API provides endpoints for managing hardware items.
 *   **Method:** `POST`
 *   **Endpoint:** `/hardware`
 *   **Description:** Creates a new hardware item.
-*   **Request Body:** A JSON `HardwareDto` object. The `id`, `isDeleted`, and `updatedAt` fields are ignored.
+*   **Request Body:** A `multipart/form-data` request with two parts:
+    *   `hardware`: A JSON string representing the `HardwareDto` object. The `id`, `isDeleted`, and `updatedAt` fields are ignored.
+    *   `file`: The image file to be uploaded.
 *   **Example Request:**
-    ```json
-    {
-        "description": "Dell UltraSharp 27-inch Monitor",
-        "quantity": "25 units",
-        "wholesalePrice": 300.00,
-        "retailPrice": 450.00,
-        "wholesalePriceUnit": "USD",
-        "retailPriceUnit": "USD",
-        "updatedBy": "admin",
-        "location": "{"warehouse": "C", "shelf": "7"}",
-        "category": {
-            "id": "c0a80121-7ac0-11eb-8dcd-0242ac130003"
+    *   `hardware` part (JSON):
+        ```json
+        {
+            "description": "Dell UltraSharp 27-inch Monitor",
+            "quantity": "25 units",
+            "wholesalePrice": 300.00,
+            "retailPrice": 450.00,
+            "wholesalePriceUnit": "USD",
+            "retailPriceUnit": "USD",
+            "updatedBy": "admin",
+            "location": "{\"warehouse\": \"C\", \"shelf\": \"7\"}",
+            "category": "Monitors"
         }
-    }
-    ```
+        ```
+    *   `file` part: The binary data of the image file.
 *   **Response Body:** The created JSON `HardwareDto` object.
 *   **Example Response:**
     ```json
@@ -272,22 +272,11 @@ The Hardware API provides endpoints for managing hardware items.
         "wholesalePriceUnit": "USD",
         "retailPriceUnit": "USD",
         "updatedBy": "admin",
-        "location": "{"warehouse": "C", "shelf": "7"}",
-        "category": {
-            "id": "c0a80121-7ac0-11eb-8dcd-0242ac130003",
-            "name": "Laptops",
-            "color": "#007bff"
-        }
+        "location": "{\"warehouse\": \"C\", \"shelf\": \"7\"}",
+        "category": "Monitors",
+        "imageUrl": "https://hardware-images-bucket.s3.eu-north-1.amazonaws.com/hardware/1665072600000_dell_monitor.jpg"
     }
     ```
-*   **Error Response:**
-    *   **Status:** `409 Conflict`
-    *   **Description:** Returned if a hardware item with the same description already exists.
-    *   **Response Body:** A string containing the error message.
-    *   **Example Response:**
-        ```
-        Hardware with description 'Dell UltraSharp 27-inch Monitor' already exists.
-        ```
 
 ### Update Hardware
 
@@ -296,14 +285,18 @@ The Hardware API provides endpoints for managing hardware items.
 *   **Description:** Updates an existing hardware item.
 *   **URL Parameters:**
     *   `id` (UUID, required): The ID of the hardware to update.
-*   **Request Body:** A JSON `HardwareDto` object. The `id` from the URL will be used.
+*   **Request Body:** A `multipart/form-data` request with two parts:
+    *   `hardware`: A JSON string representing the `HardwareDto` object. The `id` from the URL will be used.
+    *   `file` (optional): The new image file to be uploaded.
 *   **Example Request:**
-    ```json
-    {
-        "quantity": "20 pcs",
-        "retailPrice": 440.00
-    }
-    ```
+    *   `hardware` part (JSON):
+        ```json
+        {
+            "quantity": "20 pcs",
+            "retailPrice": 440.00
+        }
+        ```
+    *   `file` part: The binary data of the new image file.
 *   **Response Body:** The updated JSON `HardwareDto` object.
 *   **Example Response:**
     ```json
@@ -319,11 +312,8 @@ The Hardware API provides endpoints for managing hardware items.
         "retailPriceUnit": "USD",
         "updatedBy": "admin",
         "location": "{"warehouse": "C", "shelf": "7"}",
-        "category": {
-            "id": "c0a80121-7ac0-11eb-8dcd-0242ac130003",
-            "name": "Laptops",
-            "color": "#007bff"
-        }
+        "category": "Monitors",
+        "imageUrl": "https://hardware-images-bucket.s3.eu-north-1.amazonaws.com/hardware/1665072900000_dell_monitor_new.jpg"
     }
     ```
 

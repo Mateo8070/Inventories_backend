@@ -10,11 +10,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface HardwareRepository extends JpaRepository<Hardware, UUID> {
-    @Query("SELECT h FROM Hardware h JOIN FETCH h.category")
-    List<Hardware> findAllWithCategory();
-
-    @Query("SELECT h FROM Hardware h JOIN FETCH h.category WHERE h.id = :id")
-    Optional<Hardware> findByIdWithCategory(@Param("id") UUID id);
-
     Optional<Hardware> findByDescription(String description);
+    List<Hardware> findAllByIsDeletedFalse();
 }

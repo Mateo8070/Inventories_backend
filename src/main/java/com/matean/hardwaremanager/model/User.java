@@ -2,15 +2,16 @@ package com.matean.hardwaremanager.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition = "uuid")
-    private Long id;
+    private UUID id;
 
     private String email;
 
@@ -23,11 +24,11 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
